@@ -5,38 +5,37 @@ RSpec.describe User, type: :model do
   NON_EXISTS_USER = { login_id: 'non-exists', name: '不存在テストユーザー' }
   NON_ACTIVE_USER = { login_id: 'non-active', name: '非活性テストユーザー', email: 'non-active@test.co.jp', password: 'password', is_active: false }
 
-  # バリデーションについてのテストが必要
   describe '#validate' do
     subject { User.new(params) }
     context 'login_idが空の場合' do
       let(:params) { ACTIVE_USER.merge({ login_id: '' }) }
-      it '' do
+      it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
       end
     end
     context 'nameが空の場合' do
       let(:params) { ACTIVE_USER.merge({ name: '' }) }
-      it '' do
+      it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
       end
     end
     context 'emailが空の場合' do
       let(:params) { ACTIVE_USER.merge({ email: '' }) }
-      it '' do
+      it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
       end
     end
     context 'login_idが重複している場合' do
       let!(:dup) { User.create(ACTIVE_USER) }
       let(:params) { NON_ACTIVE_USER.merge({ login_id: ACTIVE_USER[:login_id] }) }
-      it '' do
+      it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
       end
     end
     context 'emailが重複している場合' do
       let!(:dup) { User.create(ACTIVE_USER) }
       let(:params) { NON_ACTIVE_USER.merge({ email: ACTIVE_USER[:email] }) }
-      it '' do
+      it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
       end
     end
@@ -51,7 +50,7 @@ RSpec.describe User, type: :model do
     
     context '全てのデータが正しい場合' do
       let(:params) { ACTIVE_USER }
-      it '' do
+      it 'バリデーションエラーが発生しないこと' do
         is_expected.to be_valid
       end
     end
