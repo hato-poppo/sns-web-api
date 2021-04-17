@@ -27,7 +27,7 @@ class User < ApplicationRecord
     end
 
     def find_with_active_by_uid(uid)
-      self.find_by(uid: uid, is_active: 1)
+      self.find_by(uid: uid, is_active: true)
     end
 
   end
