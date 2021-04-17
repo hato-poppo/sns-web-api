@@ -1,0 +1,10 @@
+ja:
+  activerecord:
+    models:
+      user: 'ユーザー'
+    attributes:
+      user:
+        uid: 'ユーザーID'
+        name: '名前'
+        email: 'メールアドレス'
+        is_active: '有効フラグ'

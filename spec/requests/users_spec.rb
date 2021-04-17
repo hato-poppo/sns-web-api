@@ -43,7 +43,7 @@ RSpec.describe "Users", type: :request do
       it 'エラーメッセージが返ること' do
         subject
         message = JSON.parse(response.body, symbolize_names: true)[:message]
-        expect(message).to eq ["Uid has already been taken", "Email has already been taken"]
+        expect(message).to eq ["ユーザーIDはすでに存在します", "メールアドレスはすでに存在します"]
       end
       it 'ステータスコード400 が返ること' do
         is_expected.to have_http_status(400)
@@ -70,7 +70,7 @@ RSpec.describe "Users", type: :request do
       it 'エラーメッセージが返ること' do
         subject
         message = JSON.parse(response.body, symbolize_names: true)[:message]
-        expect(message).to eq ["Uid has already been taken"]
+        expect(message).to eq ["ユーザーIDはすでに存在します"]
       end
       it 'ステータスコード400 が返ること' do
         is_expected.to have_http_status(400)

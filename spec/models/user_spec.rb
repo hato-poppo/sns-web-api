@@ -11,21 +11,21 @@ RSpec.describe User, type: :model do
       let(:params) { ACTIVE_USER.merge({ uid: '' }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:uid]).to eq ["can't be blank"]
+        expect(subject.errors.full_messages).to eq ["ユーザーIDを入力してください"]
       end
     end
     context 'nameが空の場合' do
       let(:params) { ACTIVE_USER.merge({ name: '' }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:name]).to eq ["can't be blank"]
+        expect(subject.errors.full_messages).to eq ["名前を入力してください"]
       end
     end
     context 'emailが空の場合' do
       let(:params) { ACTIVE_USER.merge({ email: '' }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:email]).to eq ["can't be blank"]
+        expect(subject.errors.full_messages).to eq ["メールアドレスを入力してください"]
       end
     end
     context 'uidが重複している場合' do
@@ -33,7 +33,7 @@ RSpec.describe User, type: :model do
       let(:params) { NON_ACTIVE_USER.merge({ uid: ACTIVE_USER[:uid] }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:uid]).to eq ["has already been taken"]
+        expect(subject.errors.full_messages).to eq ["ユーザーIDはすでに存在します"]
       end
     end
     context 'emailが重複している場合' do
@@ -41,14 +41,14 @@ RSpec.describe User, type: :model do
       let(:params) { NON_ACTIVE_USER.merge({ email: ACTIVE_USER[:email] }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:email]).to eq ["has already been taken"]
+        expect(subject.errors.full_messages).to eq ["メールアドレスはすでに存在します"]
       end
     end
     context 'is_activeがboolean以外の場合' do
       let(:params) { ACTIVE_USER.merge({ is_active: nil }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:is_active]).to eq ["is not included in the list"]
+        expect(subject.errors.full_messages).to eq ["有効フラグは一覧にありません"]
       end
     end
     context '全てのデータが正しい場合' do
