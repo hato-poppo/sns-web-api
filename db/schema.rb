@@ -13,7 +13,7 @@
 ActiveRecord::Schema.define(version: 2021_04_11_094704) do
 
   create_table "users", charset: "utf8mb4", comment: "ユーザー管理テーブル", force: :cascade do |t|
-    t.string "login_id", null: false, comment: "ログインID"
+    t.string "uid", null: false, comment: "ユーザーID"
     t.string "name", null: false, comment: "ユーザー名"
     t.string "email", null: false, comment: "Eメールアドレス"
     t.string "password", comment: "パスワード（パスワード認証時に使用）"
@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(version: 2021_04_11_094704) do
     t.datetime "created_at", default: -> { "current_timestamp()" }, comment: "登録日"
     t.datetime "updated_at", default: -> { "current_timestamp()" }, comment: "更新日"
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["login_id"], name: "index_users_on_login_id", unique: true
+    t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 
 end

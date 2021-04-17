@@ -2,14 +2,14 @@ class User < ApplicationRecord
 
   # Not null
   with_options presence: true do
-    validates :login_id
+    validates :uid
     validates :name
     validates :email
   end
 
   # Unique
   with_options uniqueness: true do
-    validates :login_id
+    validates :uid
     validates :email
   end
 
@@ -18,16 +18,16 @@ class User < ApplicationRecord
 
   class << self
 
-    def deactivate(login_id)
-      user = self.find_by_login_id(login_id)
+    def deactivate(uid)
+      user = self.find_by_uid(uid)
       return nil if user.blank?
 
       user.update(is_active: 0)
-      self.find_by_login_id(login_id)
+      self.find_by_uid(uid)
     end
 
-    def find_with_active_by_login_id(login_id)
-      self.find_by(login_id: login_id, is_active: 1)
+    def find_with_active_by_uid(uid)
+      self.find_by(uid: uid, is_active: 1)
     end
 
   end
