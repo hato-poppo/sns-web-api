@@ -30,6 +30,10 @@ class User < ApplicationRecord
       self.find_by(uid: uid, is_active: true)
     end
 
+    def to_secure
+      { only: [:id, :uid, :name, :email, :is_active, :created_at, :updated_at] }
+    end
+
   end
 
 end
