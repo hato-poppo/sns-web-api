@@ -1,17 +1,17 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
-  ACTIVE_USER = { login_id: 'exists', name: '存在テストユーザー', email: 'exists@test.co.jp', password: 'password', is_active: true }
-  NON_EXISTS_USER = { login_id: 'non-exists', name: '不存在テストユーザー' }
-  NON_ACTIVE_USER = { login_id: 'non-active', name: '非活性テストユーザー', email: 'non-active@test.co.jp', password: 'password', is_active: false }
+  ACTIVE_USER = { uid: 'exists', name: '存在テストユーザー', email: 'exists@test.co.jp', password: 'password', is_active: true }
+  NON_EXISTS_USER = { uid: 'non-exists', name: '不存在テストユーザー' }
+  NON_ACTIVE_USER = { uid: 'non-active', name: '非活性テストユーザー', email: 'non-active@test.co.jp', password: 'password', is_active: false }
 
   describe '#validate' do
     subject { User.new(params) }
-    context 'login_idが空の場合' do
-      let(:params) { ACTIVE_USER.merge({ login_id: '' }) }
+    context 'uidが空の場合' do
+      let(:params) { ACTIVE_USER.merge({ uid: '' }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:login_id]).to eq ["can't be blank"]
+        expect(subject.errors[:uid]).to eq ["can't be blank"]
       end
     end
     context 'nameが空の場合' do
@@ -28,12 +28,12 @@ RSpec.describe User, type: :model do
         expect(subject.errors[:email]).to eq ["can't be blank"]
       end
     end
-    context 'login_idが重複している場合' do
+    context 'uidが重複している場合' do
       let!(:dup) { User.create(ACTIVE_USER) }
-      let(:params) { NON_ACTIVE_USER.merge({ login_id: ACTIVE_USER[:login_id] }) }
+      let(:params) { NON_ACTIVE_USER.merge({ uid: ACTIVE_USER[:uid] }) }
       it 'バリデーションエラーが発生すること' do
         is_expected.not_to be_valid
-        expect(subject.errors[:login_id]).to eq ["has already been taken"]
+        expect(subject.errors[:uid]).to eq ["has already been taken"]
       end
     end
     context 'emailが重複している場合' do
@@ -59,41 +59,41 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe '#find_by_login_id' do
-    subject { User.find_by_login_id(login_id) }
-    context 'login_idが一致するユーザーが存在しない場合' do
-      let(:login_id) { NON_EXISTS_USER[:login_id] }
+  describe '#find_by_uid' do
+    subject { User.find_by_uid(uid) }
+    context 'uidが一致するユーザーが存在しない場合' do
+      let(:uid) { NON_EXISTS_USER[:uid] }
       it 'nilが返ること' do
         is_expected.to eq nil
       end
     end
-    context 'login_idが一致するユーザーが存在する場合' do
+    context 'uidが一致するユーザーが存在する場合' do
       let!(:active_user) { User.create(ACTIVE_USER) }
-      let(:login_id) { ACTIVE_USER[:login_id] }
+      let(:uid) { ACTIVE_USER[:uid] }
       it 'ユーザー情報を取得できること' do
         is_expected.to eq active_user
       end
     end
   end
 
-  describe '#find_with_active_by_login_id' do
-    subject { User.find_with_active_by_login_id(login_id) }
-    context 'login_idが一致するユーザーがノンアクティブの場合' do
+  describe '#find_with_active_by_uid' do
+    subject { User.find_with_active_by_uid(uid) }
+    context 'uidが一致するユーザーがノンアクティブの場合' do
       let!(:non_active_user) { User.create(NON_ACTIVE_USER) }
-      let(:login_id) { NON_ACTIVE_USER[:login_id] }
+      let(:uid) { NON_ACTIVE_USER[:uid] }
       it 'nilが返ること' do
         is_expected.to eq nil
       end
     end
-    context 'login_idが一致するアクティブユーザーが存在しない場合' do
-      let(:login_id) { NON_EXISTS_USER[:login_id] }
+    context 'uidが一致するアクティブユーザーが存在しない場合' do
+      let(:uid) { NON_EXISTS_USER[:uid] }
       it 'nilが返ること' do
         is_expected.to eq nil
       end
     end
-    context 'login_idが一致するアクティブユーザーが存在する場合' do
+    context 'uidが一致するアクティブユーザーが存在する場合' do
       let!(:active_user) { User.create(ACTIVE_USER) }
-      let(:login_id) { ACTIVE_USER[:login_id] }
+      let(:uid) { ACTIVE_USER[:uid] }
       it 'ユーザー情報を取得できること' do
         is_expected.to eq active_user
       end
@@ -101,9 +101,9 @@ RSpec.describe User, type: :model do
   end
 
   describe '#deactivate' do
-    subject { User.deactivate(login_id) }
+    subject { User.deactivate(uid) }
     context '対象ユーザーが存在しない場合' do
-      let(:login_id) { NON_EXISTS_USER[:login_id] }
+      let(:uid) { NON_EXISTS_USER[:uid] }
       it 'ユーザー情報が更新されないこと' do
         expect { subject }.to change(User, :count).by(0)
       end
@@ -113,7 +113,7 @@ RSpec.describe User, type: :model do
     end
     context '対象ユーザーが存在 且つ ノンアクティブユーザー の場合' do
       let!(:non_active_user) { User.create(NON_ACTIVE_USER) }
-      let(:login_id) { NON_ACTIVE_USER[:login_id] }
+      let(:uid) { NON_ACTIVE_USER[:uid] }
       it 'ユーザー情報が更新されないこと' do
         expect { subject }.to change(User, :count).by(0)
       end
@@ -123,7 +123,7 @@ RSpec.describe User, type: :model do
     end
     context '対象ユーザーが存在 且つ アクティブユーザー の場合' do
       let!(:active_user) { User.create(ACTIVE_USER) }
-      let(:login_id) { ACTIVE_USER[:login_id] }
+      let(:uid) { ACTIVE_USER[:uid] }
       it 'ユーザー情報が更新されること' do
         # 良い方法を模索中
       end
