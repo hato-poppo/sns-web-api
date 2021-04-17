@@ -18,12 +18,12 @@ class User < ApplicationRecord
 
   class << self
 
-    def deactivate(uid)
-      user = self.find_by_uid(uid)
+    def deactivate(id)
+      user = self.find_by_uid(id)
       return nil if user.blank?
 
       user.update(is_active: 0)
-      self.find_by_uid(uid)
+      self.find_by_uid(id)
     end
 
     def find_with_active_by_uid(uid)
