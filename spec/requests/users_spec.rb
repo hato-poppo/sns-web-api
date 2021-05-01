@@ -1,10 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe "Users", type: :request do
-  ADMIN_RECORD = { id: 1, uid: 'admin', name: '管理者', email: 'admin@dummy.com', password: 'admin' }
-  TEST_RECORD = { id: 2, uid: 'test-user', name: 'テストユーザー', email: 'user@test.co.jp', password: 'password' }
-  # let!(:sys) { User.create(ADMIN_RECORD) }
-  # let!(:user) { User.create(TEST_RECORD) }
+  ADMIN_RECORD = { id: 1, uid: 'admin', name: '管理者', email: 'admin@dummy.com', password: 'admin', role_id: 1 }
+  TEST_RECORD = { id: 2, uid: 'test-user', name: 'テストユーザー', email: 'user@test.co.jp', password: 'password', role_id: 2 }
 
   describe "GET #index" do
     subject { get '/users'; response  }
@@ -21,8 +19,9 @@ RSpec.describe "Users", type: :request do
   end
 
   describe "GET #show" do
+    subject { get "/users/#{id}"; response }
     context '対象データが存在しない場合' do
-      subject { get "/users/#{TEST_RECORD[:id]}"; response }
+      let(:id) { TEST_RECORD[:id] }
       it 'データの取得に失敗すること' do
         subject
         expect(response.body).to eq JSON.generate({status: 404, message: '対象のユーザーが存在していません。'})
@@ -32,7 +31,7 @@ RSpec.describe "Users", type: :request do
       end
     end
     context '対象データが存在する場合' do
-      subject { get "/users/#{ADMIN_RECORD[:id]}"; response }
+      let(:id) { ADMIN_RECORD[:id] }
       it 'データの取得に成功すること' do
         subject
         expect(response.body).to eq User.find_by_id(1).to_json(User.to_secure)

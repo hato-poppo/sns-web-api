@@ -1,9 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
-  ACTIVE_USER = { uid: 'exists', name: '存在テストユーザー', email: 'exists@test.co.jp', password: 'password', is_active: true }
+  ACTIVE_USER = { uid: 'exists', name: '存在テストユーザー', email: 'exists@test.co.jp', password: 'password', role_id: 2, is_active: true }
   NON_EXISTS_USER = { id: 0, uid: 'non-exists', name: '不存在テストユーザー' }
-  NON_ACTIVE_USER = { uid: 'non-active', name: '非活性テストユーザー', email: 'non-active@test.co.jp', password: 'password', is_active: false }
+  NON_ACTIVE_USER = { uid: 'non-active', name: '非活性テストユーザー', email: 'non-active@test.co.jp', password: 'password', role_id: 2, is_active: false }
 
   describe '#validate' do
     subject { User.new(params) }
