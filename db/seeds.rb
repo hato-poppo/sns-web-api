@@ -5,3 +5,9 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+
+# ユーザーテーブルレコード作成
+User.create([
+  { id: 1, uid: 'admin', name: '管理者', email: 'admin@dummy.com', password: 'admin' }
+])
+  

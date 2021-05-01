@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe User, type: :model do
   ACTIVE_USER = { uid: 'exists', name: '存在テストユーザー', email: 'exists@test.co.jp', password: 'password', is_active: true }
-  NON_EXISTS_USER = { uid: 'non-exists', name: '不存在テストユーザー' }
+  NON_EXISTS_USER = { id: 0, uid: 'non-exists', name: '不存在テストユーザー' }
   NON_ACTIVE_USER = { uid: 'non-active', name: '非活性テストユーザー', email: 'non-active@test.co.jp', password: 'password', is_active: false }
 
   describe '#validate' do
@@ -101,9 +101,9 @@ RSpec.describe User, type: :model do
   end
 
   describe '#deactivate' do
-    subject { User.deactivate(uid) }
+    subject { User.deactivate(id) }
     context '対象ユーザーが存在しない場合' do
-      let(:uid) { NON_EXISTS_USER[:uid] }
+      let(:id) { NON_EXISTS_USER[:id] }
       it 'ユーザー情報が更新されないこと' do
         expect { subject }.to change(User, :count).by(0)
       end
@@ -113,7 +113,7 @@ RSpec.describe User, type: :model do
     end
     context '対象ユーザーが存在 且つ ノンアクティブユーザー の場合' do
       let!(:non_active_user) { User.create(NON_ACTIVE_USER) }
-      let(:uid) { NON_ACTIVE_USER[:uid] }
+      let(:id) { non_active_user.id }
       it 'ユーザー情報が更新されないこと' do
         expect { subject }.to change(User, :count).by(0)
       end
@@ -123,7 +123,7 @@ RSpec.describe User, type: :model do
     end
     context '対象ユーザーが存在 且つ アクティブユーザー の場合' do
       let!(:active_user) { User.create(ACTIVE_USER) }
-      let(:uid) { ACTIVE_USER[:uid] }
+      let(:id) { active_user.id }
       it 'ユーザー情報が更新されること' do
         # 良い方法を模索中
       end

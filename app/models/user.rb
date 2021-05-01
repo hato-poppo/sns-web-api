@@ -20,7 +20,7 @@ class User < ApplicationRecord
 
     # TODO: 削除対象の指定に`id`を使うか`uid`を使うか要検討
     def deactivate(id)
-      user = self.find_by(id)
+      user = self.find_by_id(id)
       return nil if user.blank?
 
       user.update(is_active: false)
