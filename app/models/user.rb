@@ -18,12 +18,13 @@ class User < ApplicationRecord
 
   class << self
 
+    # TODO: 削除対象の指定に`id`を使うか`uid`を使うか要検討
     def deactivate(id)
-      user = self.find_by_uid(id)
+      user = self.find_by(id)
       return nil if user.blank?
 
-      user.update(is_active: 0)
-      self.find_by_uid(id)
+      user.update(is_active: false)
+      user
     end
 
     def find_with_active_by_uid(uid)
