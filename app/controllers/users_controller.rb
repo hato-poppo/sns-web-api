@@ -1,38 +1,29 @@
 class UsersController < ApplicationController
 
   def index
-    render json: find_all_users
+    response_success(User.all&.to_json(secure))
   end
 
   def show
-    render json: find_user
+    user = User.find_by_id(record_id)&.to_json(secure)
+    user ? response_success(user) : response_not_found(not_found_message)
   end
 
   def create
     user = User.new(user_params)
-    if user.save
-      render json: find_user
-    else
-      # NOTE: 既存データとの重複もバリデーションエラーとしてここに入るが、 409 Conflict として分けるべき？
-      render json: { message: user.errors.full_messages }, status: 400
-    end
+    # NOTE: 既存データとの重複もバリデーションエラーとして`400 Bad Request`に入るが、`409 Conflict`として分けるべき？
+    user.save ? response_success(user.to_json(secure)) : response_bad_request(user.errors.full_messages)
   end
 
   def update
     user = User.find_by_id(record_id)
-    render json: { message: '対象のユーザーが存在していません。' }, status: 404 and return if user.blank?
-    if user.update(user_params)
-      render json: find_user
-    else
-      render json: { message: user.errors.full_messages }, status: 400
-    end
+    response_not_found(not_found_message) and return if user.blank?
+    user.update(user_params) ? response_success(user&.to_json(secure)) : response_bad_request(user.errors.full_messages)
   end
 
   def destroy
-    user = User.find_by_id(record_id)
-    render json: { message: '対象のユーザーが存在していません。' }, status: 404 and return if user.blank?
-    User.deactivate(record_id)
-    render json: find_user
+    response_not_found(not_found_message) and return if User.find_by_id(record_id).blank?
+    response_success(User.deactivate(record_id)&.to_json(secure))
   end
 
   private
@@ -45,16 +36,12 @@ class UsersController < ApplicationController
       params[:id]
     end
 
-    def find_all_users
-      User.all.to_json(secure)
-    end
-
-    def find_user
-      User.find_by_id(record_id).to_json(secure)
-    end
-
     def secure
       User.to_secure
+    end
+
+    def not_found_message
+      '対象のユーザーが存在していません。'
     end
 
 end
