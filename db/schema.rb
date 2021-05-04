@@ -12,6 +12,18 @@
 
 ActiveRecord::Schema.define(version: 2021_04_30_233635) do
 
+  create_table "posts", charset: "utf8mb4", comment: "投稿テーブル", force: :cascade do |t|
+    t.bigint "parent_id", null: false, comment: "親投稿ID"
+    t.bigint "user_id", null: false, comment: "投稿者"
+    t.string "title", null: false, comment: "投稿タイトル"
+    t.string "text", null: false, comment: "投稿内容"
+    t.boolean "is_deleted", default: false, null: false, comment: "削除フラグ"
+    t.datetime "created_at", default: -> { "current_timestamp()" }, comment: "登録日"
+    t.datetime "updated_at", default: -> { "current_timestamp()" }, comment: "更新日"
+    t.index ["parent_id"], name: "index_posts_on_parent_id"
+    t.index ["user_id"], name: "index_posts_on_user_id"
+  end
+
   create_table "roles", charset: "utf8mb4", comment: "権限管理テーブル", force: :cascade do |t|
     t.string "name", null: false, comment: "名称"
     t.index ["name"], name: "index_roles_on_name", unique: true
@@ -31,5 +43,7 @@ ActiveRecord::Schema.define(version: 2021_04_30_233635) do
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 
+  add_foreign_key "posts", "posts", column: "parent_id"
+  add_foreign_key "posts", "users"
   add_foreign_key "users", "roles"
 end

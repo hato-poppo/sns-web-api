@@ -2,6 +2,8 @@ ja:
   activerecord:
     models:
       user: 'ユーザー'
+      role: '権限'
+      post: '投稿'
     attributes:
       user:
         uid: 'ユーザーID'
@@ -10,3 +12,11 @@ ja:
         is_active: '有効フラグ'
       role:
         name: '名称'
+      post:
+        parent_id: '親投稿ID'
+        user: '投稿者'
+        title: '投稿タイトル'
+        text: '投稿内容'
+        is_deleted: '削除フラグ'
+        created_at: '投稿日'
+        updated_at: '更新日'
