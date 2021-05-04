@@ -59,23 +59,6 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe '#find_by_uid' do
-    subject { User.find_by_uid(uid) }
-    context 'uidが一致するユーザーが存在しない場合' do
-      let(:uid) { NON_EXISTS_USER[:uid] }
-      it 'nilが返ること' do
-        is_expected.to eq nil
-      end
-    end
-    context 'uidが一致するユーザーが存在する場合' do
-      let!(:active_user) { User.create(ACTIVE_USER) }
-      let(:uid) { ACTIVE_USER[:uid] }
-      it 'ユーザー情報を取得できること' do
-        is_expected.to eq active_user
-      end
-    end
-  end
-
   describe '#find_with_active_by_uid' do
     subject { User.find_with_active_by_uid(uid) }
     context 'uidが一致するユーザーがノンアクティブの場合' do
