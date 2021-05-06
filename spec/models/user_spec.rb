@@ -84,9 +84,9 @@ RSpec.describe User, type: :model do
   end
 
   describe '#deactivate' do
-    subject { User.deactivate(id) }
+    subject { User.deactivate(uid) }
     context '対象ユーザーが存在しない場合' do
-      let(:id) { NON_EXISTS_USER[:id] }
+      let(:uid) { NON_EXISTS_USER[:uid] }
       it 'ユーザー情報が更新されないこと' do
         expect { subject }.to change(User, :count).by(0)
       end
@@ -96,7 +96,7 @@ RSpec.describe User, type: :model do
     end
     context '対象ユーザーが存在 且つ ノンアクティブユーザー の場合' do
       let!(:non_active_user) { User.create(NON_ACTIVE_USER) }
-      let(:id) { non_active_user.id }
+      let(:uid) { non_active_user.uid }
       it 'ユーザー情報が更新されないこと' do
         expect { subject }.to change(User, :count).by(0)
       end
@@ -106,7 +106,7 @@ RSpec.describe User, type: :model do
     end
     context '対象ユーザーが存在 且つ アクティブユーザー の場合' do
       let!(:active_user) { User.create(ACTIVE_USER) }
-      let(:id) { active_user.id }
+      let(:uid) { active_user.uid }
       it 'ユーザー情報が更新されること' do
         # 良い方法を模索中
       end
