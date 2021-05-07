@@ -53,8 +53,8 @@ RSpec.describe Post, type: :model do
     end
   end
 
-  describe '#find_parents' do
-    subject { Post.find_parents }
+  describe '#select_all_visible_parents' do
+    subject { Post.select_all_visible_parents }
     context 'データが存在しない場合' do
       it '空の配列を取得できること' do
         is_expected.to eq []
@@ -68,18 +68,17 @@ RSpec.describe Post, type: :model do
     end
   end
 
-  describe '#find_children' do
-    subject { Post.find_children }
+  describe '#select_all_visible_children' do
+    subject { Post.select_all_visible_children }
     context 'データが存在しない場合' do
       it '空のhashを取得できること' do
-        is_expected.to eq Hash.new([])
+        is_expected.to eq []
       end
     end
     context 'データが存在する場合' do
       let!(:posts) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST]) }
-      let(:result) { { 1 => [Post.find_by_id(3), Post.find_by_id(4)] } }
       it '未削除の親投稿が全て取得できること' do
-        is_expected.to eq result
+        is_expected.to eq [Post.find_by_id(3), Post.find_by_id(4)]
       end
     end
   end
@@ -178,7 +177,7 @@ RSpec.describe Post, type: :model do
   end
 
   describe '#logical_delete' do
-    let!(:default_post) { Post.create(TEST_POST) }
+    let!(:default_post) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST, REGEXP_POST]) }
     subject { Post.logical_delete(id) }
     context '対象投稿が存在しない場合' do
       let(:id) { 0 } #NON_EXISTS_USER[:id]
@@ -190,23 +189,24 @@ RSpec.describe Post, type: :model do
       end
     end
     context '対象投稿が存在 且つ 削除フラグがTRUE の場合' do
-      let!(:deleted_post) { Post.create(DELETED_POST) }
-      let(:id) { 5 }
+      let(:id) { DELETED_POST[:id] }
       it '投稿レコードが更新されないこと' do
         expect { subject }.to change(User, :count).by(0)
       end
       it '投稿レコードが返ること' do
-        is_expected.to eq deleted_post
+        is_expected.to eq Post.find_by_id(id)
       end
     end
     context '対象投稿が存在 且つ 削除フラグがFALSE の場合' do
-      let(:id) { 1 }
-      it '投稿情報が更新されること' do
-        # 良い方法を模索中
-      end
+      let(:id) { TEST_POST[:id] }
       it '更新後の投稿情報が返ること' do
-        default_post[:is_deleted] = true
-        is_expected.to eq (default_post)
+        post = Post.find_by_id(id)
+        post.is_deleted = true
+        is_expected.to eq post
+      end
+      it '子投稿も同時に削除されていること' do
+        subject
+        expect(Post.all_with_reply).to eq [Post.find_by_id(ALONE_POST[:id]), Post.find_by_id(REGEXP_POST[:id])]
       end
     end
   end
