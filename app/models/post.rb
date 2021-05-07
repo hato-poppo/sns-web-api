@@ -13,8 +13,10 @@ class Post < ApplicationRecord
   # Boolean only
   validates :is_deleted, inclusion: { in: [ true, false ] }
 
+  scope :select_posts_with_users, -> { select("posts.*, users.uid, users.name") }
   scope :join_users, -> { joins(:user) }
   scope :by_user_id, -> (id) { where(user_id: id) }
+  scope :by_parent_id, -> (id) { where(parent_id: id) }
   scope :with_visible, -> { where(is_deleted: false) } 
   scope :with_parents, -> { where('posts.id = parent_id') }
   scope :with_children, -> { where('posts.id != parent_id') }
@@ -22,16 +24,16 @@ class Post < ApplicationRecord
   class << self
 
     def all_with_reply
-      children = find_children
-      find_parents&.each { |x| x.children = children[x.id] || [] } || []
+      children = select_all_visible_children.group_by { |x| x.parent_id }
+      select_all_visible_parents&.each { |x| x.children = children[x.id] || [] } || []
     end
 
-    def find_parents
-      self.with_visible.with_parents.join_users.select("posts.*, users.uid, users.name")
+    def select_all_visible_parents
+      self.with_visible.with_parents.join_users.select_posts_with_users
     end
 
-    def find_children
-      self.with_visible.with_children.join_users.select("posts.*, users.uid, users.name").group_by { |x| x.parent_id }
+    def select_all_visible_children
+      self.with_visible.with_children.join_users.select_posts_with_users
     end
 
     def find_by_uid(uid)
@@ -47,11 +49,17 @@ class Post < ApplicationRecord
       self.where('text LIKE ?', "%#{escape(text)}%").with_visible
     end
 
+    def find_children_by_parent_id(parent_id)
+      self.with_visible.with_children.join_users.select_posts_with_users.by_parent_id(parent_id)
+    end
+
     def logical_delete(id)
       post = Post.find_by_id(id)
       return nil if post.blank?
 
       post.update(is_deleted: true)
+      logical_delete_children(id)
+
       post
     end
 
@@ -59,6 +67,10 @@ class Post < ApplicationRecord
 
       def escape(str)
         str.gsub(/([%_])/){ "\\#{$1}" }
+      end
+
+      def logical_delete_children(parent_id)
+        find_children_by_parent_id(parent_id).each { |post| post.update(is_deleted: true) }
       end
 
   end
