@@ -28,14 +28,6 @@ class Post < ApplicationRecord
       select_all_visible_parents&.each { |x| x.children = children[x.id] || [] } || []
     end
 
-    def select_all_visible_parents
-      self.with_visible.with_parents.join_users.select_posts_with_users
-    end
-
-    def select_all_visible_children
-      self.with_visible.with_children.join_users.select_posts_with_users
-    end
-
     def find_by_uid(uid)
       user_id = User.find_by_uid(uid)&.id
       user_id ? self.by_user_id(user_id).with_visible : nil
@@ -67,6 +59,14 @@ class Post < ApplicationRecord
 
       def escape(str)
         str.gsub(/([%_])/){ "\\#{$1}" }
+      end
+
+      def select_all_visible_parents
+        self.with_visible.with_parents.join_users.select_posts_with_users
+      end
+  
+      def select_all_visible_children
+        self.with_visible.with_children.join_users.select_posts_with_users
       end
 
       def logical_delete_children(parent_id)

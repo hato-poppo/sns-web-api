@@ -53,36 +53,6 @@ RSpec.describe Post, type: :model do
     end
   end
 
-  describe '#select_all_visible_parents' do
-    subject { Post.select_all_visible_parents }
-    context 'データが存在しない場合' do
-      it '空の配列を取得できること' do
-        is_expected.to eq []
-      end
-    end
-    context 'データが存在する場合' do
-      let!(:posts) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST]) }
-      it '未削除の親投稿が全て取得できること' do
-        is_expected.to eq [Post.find_by_id(1), Post.find_by_id(2)]
-      end
-    end
-  end
-
-  describe '#select_all_visible_children' do
-    subject { Post.select_all_visible_children }
-    context 'データが存在しない場合' do
-      it '空のhashを取得できること' do
-        is_expected.to eq []
-      end
-    end
-    context 'データが存在する場合' do
-      let!(:posts) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST]) }
-      it '未削除の親投稿が全て取得できること' do
-        is_expected.to eq [Post.find_by_id(3), Post.find_by_id(4)]
-      end
-    end
-  end
-
   describe '#all_with_reply' do
     subject { Post.all_with_reply }
     context 'データが存在しない場合' do
