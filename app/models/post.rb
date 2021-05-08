@@ -15,11 +15,11 @@ class Post < ApplicationRecord
 
   scope :select_posts_with_users, -> { select("posts.*, users.uid, users.name") }
   scope :join_users, -> { joins(:user) }
-  scope :by_user_id, -> (id) { where(user_id: id) }
-  scope :by_parent_id, -> (id) { where(parent_id: id) }
+  scope :by_user_id, -> (user_id) { where(user_id: user_id) }
+  scope :by_parent_id, -> (parent_id) { where(parent_id: parent_id) }
   scope :with_visible, -> { where(is_deleted: false) } 
-  scope :with_parents, -> { where('posts.id = parent_id') }
-  scope :with_children, -> { where('posts.id != parent_id') }
+  scope :only_parents, -> { where('posts.id = parent_id') }
+  scope :only_children, -> { where('posts.id != parent_id') }
 
   class << self
 
@@ -42,7 +42,7 @@ class Post < ApplicationRecord
     end
 
     def find_children_by_parent_id(parent_id)
-      self.with_visible.with_children.join_users.select_posts_with_users.by_parent_id(parent_id)
+      self.with_visible.only_children.join_users.select_posts_with_users.by_parent_id(parent_id)
     end
 
     def logical_delete(id)
@@ -62,11 +62,11 @@ class Post < ApplicationRecord
       end
 
       def select_all_visible_parents
-        self.with_visible.with_parents.join_users.select_posts_with_users
+        self.with_visible.only_parents.join_users.select_posts_with_users
       end
   
       def select_all_visible_children
-        self.with_visible.with_children.join_users.select_posts_with_users
+        self.with_visible.only_children.join_users.select_posts_with_users
       end
 
       def logical_delete_children(parent_id)
