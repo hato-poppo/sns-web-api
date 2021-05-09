@@ -1,12 +1,25 @@
 require 'rails_helper'
 
 RSpec.describe Post, type: :model do
+  NON_EXISTS_POST = { id: 0 }
   TEST_POST = { id: 1, parent_id: 1, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
-  ALONE_POST = { id: 2, parent_id: 2, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
-  CHILD_POST = { id: 3, parent_id: 1, user_id: 1, title: 'テスト投稿（子）', text: 'これはテスト投稿の子投稿です。', is_deleted: false }
-  GRANDCHILD_POST = { id: 4, parent_id: 1, user_id: 1, title: 'テスト投稿（孫）', text: 'これはテスト投稿の孫投稿です。', is_deleted: false }
-  DELETED_POST = { id: 5, parent_id: 5, user_id: 1, title: 'テスト投稿', text: 'これは削除されたテスト投稿です。', is_deleted: true }
-  REGEXP_POST = { id: 6, parent_id: 6, user_id: 1, title: 'テスト投稿（正規表現）%()\||/_', text: '%()\||/_', is_deleted: false }
+  CHILD_POST = { id: 2, parent_id: 1, user_id: 1, title: 'テスト投稿（子）', text: 'これはテスト投稿の子投稿です。', is_deleted: false }
+  CHILD_POST2 = { id: 3, parent_id: 1, user_id: 1, title: 'テスト投稿（子）', text: 'これはテスト投稿の子投稿2です。', is_deleted: false }
+  ALONE_POST = { id: 4, parent_id: 4, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
+  DELETED_POST = { id: 5, parent_id: 5, user_id: 1, title: 'テスト投稿（削除済み）', text: 'これは削除されたテスト投稿です。', is_deleted: true }
+  DELETED_POST_CHILD = { id: 6, parent_id: 5, user_id: 1, title: 'テスト投稿（削除済み投稿の子）', text: 'これは削除されたテスト投稿の子投稿です。', is_deleted: false }
+  HIVING_DELETED_CHILD_POST = { id: 7, parent_id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿を持つ投稿）', text: 'これは削除された子投稿を持つテスト投稿です。', is_deleted: false }
+  DELETED_CHILD_POST = { id: 8, parent_id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿）', text: 'これは削除された子投稿です。', is_deleted: true }
+  REGEXP_POST = { id: 9, parent_id: 9, user_id: 1, title: 'テスト投稿（正規表現）%_', text: '%()\||/_', is_deleted: false }
+  let!(:posts) { Post.create([TEST_POST, CHILD_POST, CHILD_POST2, ALONE_POST, DELETED_POST, DELETED_POST_CHILD, HIVING_DELETED_CHILD_POST, DELETED_CHILD_POST, REGEXP_POST]) }
+  let(:result_having_child_post) { 
+    parent = Post.find_by_id(TEST_POST[:id])
+    parent.update({ children: [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])] })
+    parent
+  }
+  let(:result_alone_post) { Post.find_by_id(4) }
+  let(:result_having_deleted_child_post) { Post.find_by_id(7) }
+  let(:result_regexp_post) { Post.find_by_id(9) } # wild card
 
   describe '#validate' do
     subject { Post.new(params) }
@@ -56,25 +69,47 @@ RSpec.describe Post, type: :model do
   describe '#all_with_reply' do
     subject { Post.all_with_reply }
     context 'データが存在しない場合' do
+      let!(:posts) {} # 投稿しないように上書き
       it '空の配列を取得できること' do
         is_expected.to eq []
       end
     end
     context 'データが存在する場合' do
-      let!(:posts) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST]) }
-      let!(:result) { 
-        parent = Post.find_by_id(1)
-        parent.update!({ children: [Post.find_by_id(3), Post.find_by_id(4)] })
-        [parent, Post.find_by_id(2)]
-      }
-      it '全件取得できること' do
-        is_expected.to eq result
+      it '削除されていない投稿が全件取得できること' do
+        is_expected.to eq [result_having_child_post, result_alone_post, result_having_deleted_child_post, result_regexp_post]
+      end
+    end
+  end
+
+  describe '#find_by_id_with_children' do
+    subject { Post.find_by_id_with_children(id) }
+    context '対象投稿が存在しない場合' do
+      let(:id) { NON_EXISTS_POST[:id] }
+      it 'nilが返ること' do
+        is_expected.to eq nil
+      end
+    end
+    context '対象投稿が論理削除されている場合' do
+      let(:id) { DELETED_POST[:id] }
+      it 'nilが返ること' do
+        is_expected.to eq nil
+      end
+    end
+    context '対象投稿の子投稿が論理削除されている場合' do
+      let(:id) { HIVING_DELETED_CHILD_POST[:id] }
+      it '親投稿のみが返ること' do
+        is_expected.to eq result_having_deleted_child_post
+      end
+    end
+    context '対象投稿が存在している場合' do
+      let(:id) { TEST_POST[:id] }
+      it '子投稿を持った親投稿が返ること' do
+        is_expected.to eq result_having_child_post
       end
     end
   end
 
   describe '#find_by_uid' do
-    let!(:posts) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST]) }
     subject { Post.find_by_uid(uid) }
     context '条件に一致するユーザーが存在しない場合' do
       let(:uid) { 'non-exists' }
@@ -92,15 +127,13 @@ RSpec.describe Post, type: :model do
     end
     context '条件に一致するデータが存在する場合' do
       let(:uid) { 'admin' }
-      let(:result) { [Post.find_by_id(1), Post.find_by_id(2), Post.find_by_id(3), Post.find_by_id(4)] }
       it '該当データを全件取得できること' do
-        is_expected.to eq result
+        is_expected.to eq [Post.find_by_id(TEST_POST[:id]), Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id]), result_alone_post, result_having_deleted_child_post, result_regexp_post]
       end
     end
   end
 
   describe '#find_by_text' do
-    let!(:posts) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST, REGEXP_POST]) }
     subject { Post.find_by_text(text) }
     # 条件にエスケープ必須の文字も追加すること
     context '条件に一致するデータが存在しない場合' do
@@ -112,13 +145,12 @@ RSpec.describe Post, type: :model do
     context '条件に一致するデータが存在する場合' do
       let(:text) { '子投稿' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [Post.find_by_id(3)]
+        is_expected.to eq [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id]), result_having_deleted_child_post]
       end
     end
   end
 
   describe '#find_by_title' do
-    let!(:posts) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST, REGEXP_POST]) }
     subject { Post.find_by_title(title) }
     context '条件に一致するデータが存在しない場合' do
       let(:title) { '（親）' }
@@ -129,7 +161,7 @@ RSpec.describe Post, type: :model do
     context '条件に一致するデータが存在する場合' do
       let(:title) { '（子）' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [Post.find_by_id(3)]
+        is_expected.to eq [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])]
       end
     end
     context '_を条件にして一致するデータが存在する場合' do
@@ -146,37 +178,28 @@ RSpec.describe Post, type: :model do
     end
   end
 
-  describe '#logical_delete' do
-    let!(:default_post) { Post.create([TEST_POST, ALONE_POST, CHILD_POST, GRANDCHILD_POST, DELETED_POST, REGEXP_POST]) }
-    subject { Post.logical_delete(id) }
+  describe '#logical_delete_with_children' do
+    subject { Post.logical_delete_with_children(id) }
     context '対象投稿が存在しない場合' do
-      let(:id) { 0 } #NON_EXISTS_USER[:id]
-      it '投稿情報が更新されないこと' do
-        expect { subject }.to change(Post, :count).by(0)
-      end
-      it 'nilが返ること' do
-        is_expected.to eq nil
+      let(:id) { NON_EXISTS_POST[:id] }
+      it 'falseが返ること' do
+        is_expected.to eq false
       end
     end
     context '対象投稿が存在 且つ 削除フラグがTRUE の場合' do
       let(:id) { DELETED_POST[:id] }
-      it '投稿レコードが更新されないこと' do
-        expect { subject }.to change(User, :count).by(0)
-      end
-      it '投稿レコードが返ること' do
-        is_expected.to eq Post.find_by_id(id)
+      it 'falseが返ること' do
+        is_expected.to eq false
       end
     end
     context '対象投稿が存在 且つ 削除フラグがFALSE の場合' do
       let(:id) { TEST_POST[:id] }
-      it '更新後の投稿情報が返ること' do
-        post = Post.find_by_id(id)
-        post.is_deleted = true
-        is_expected.to eq post
+      it 'trueが返ること' do
+        is_expected.to eq true
       end
       it '子投稿も同時に削除されていること' do
         subject
-        expect(Post.all_with_reply).to eq [Post.find_by_id(ALONE_POST[:id]), Post.find_by_id(REGEXP_POST[:id])]
+        expect(Post.all_with_reply).to eq [result_alone_post, result_having_deleted_child_post, result_regexp_post]
       end
     end
   end
