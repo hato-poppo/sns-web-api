@@ -17,9 +17,9 @@ RSpec.describe Post, type: :model do
     parent.update({ children: [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])] })
     parent
   }
-  let(:result_alone_post) { Post.find_by_id(4) }
-  let(:result_having_deleted_child_post) { Post.find_by_id(7) }
-  let(:result_regexp_post) { Post.find_by_id(9) } # wild card
+  let(:result_alone_post) { Post.find_by_id(ALONE_POST[:id]) }
+  let(:result_having_deleted_child_post) { Post.find_by_id(HIVING_DELETED_CHILD_POST[:id]) }
+  let(:result_regexp_post) { Post.find_by_id(REGEXP_POST[:id]) } # wild card
 
   describe '#validate' do
     subject { Post.new(params) }
@@ -135,7 +135,6 @@ RSpec.describe Post, type: :model do
 
   describe '#find_by_text' do
     subject { Post.find_by_text(text) }
-    # 条件にエスケープ必須の文字も追加すること
     context '条件に一致するデータが存在しない場合' do
       let(:text) { '親投稿' }
       it '空の配列を取得できること' do
@@ -146,6 +145,18 @@ RSpec.describe Post, type: :model do
       let(:text) { '子投稿' }
       it '該当データを全件取得できること' do
         is_expected.to eq [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id]), result_having_deleted_child_post]
+      end
+    end
+    context '_を条件にして一致するデータが存在する場合' do
+      let(:text) { '_' }
+      it '該当データを全件取得できること' do
+        is_expected.to eq [result_regexp_post]
+      end
+    end
+    context '%を条件にして一致するデータが存在する場合' do
+      let(:text) { '%' }
+      it '該当データを全件取得できること' do
+        is_expected.to eq [result_regexp_post]
       end
     end
   end
