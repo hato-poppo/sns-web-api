@@ -17,7 +17,7 @@ class Post < ApplicationRecord
   scope :join_users, -> { joins(:user) }
   scope :by_user_id, -> (user_id) { where(user_id: user_id) }
   scope :by_parent_id, -> (parent_id) { where(parent_id: parent_id) }
-  scope :with_visible, -> { where(is_deleted: false) } 
+  scope :with_visible, -> { where(is_deleted: false).joins('INNER JOIN (SELECT id AS exists_id FROM `posts` WHERE is_deleted = false) parent ON exists_id = `posts`.`parent_id`') } 
   scope :only_parents, -> { where('posts.id = parent_id') }
   scope :only_children, -> { where('posts.id != parent_id') }
 
