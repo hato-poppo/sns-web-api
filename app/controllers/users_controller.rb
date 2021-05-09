@@ -1,5 +1,9 @@
 class UsersController < ApplicationController
 
+  # TODO: 操作前に権限チェックを行い、以下の条件のどれかに当てはまれば操作可能とする
+  #         操作対象ユーザーがログイン中のユーザーと一致
+  #         ログインユーザーが管理者権限持ちのユーザー
+
   def index
     response_success(User.all&.to_json(secure))
   end

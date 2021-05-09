@@ -21,7 +21,7 @@ RSpec.describe Post, type: :model do
   }
   let(:result_alone_post) { Post.find_by_id(ALONE_POST[:id]) }
   let(:result_having_deleted_child_post) { Post.find_by_id(HIVING_DELETED_CHILD_POST[:id]) }
-  let(:result_wild_card_post) { Post.find_by_id(WILD_CARD_POST[:id]) } # wild card
+  let(:result_wild_card_post) { Post.find_by_id(WILD_CARD_POST[:id]) }
 
   describe '#validate' do
     subject { Post.new(params) }
