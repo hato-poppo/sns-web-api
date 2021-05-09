@@ -81,6 +81,34 @@ RSpec.describe Post, type: :model do
     end
   end
 
+  describe '#find_by_id_with_children' do
+    subject { Post.find_by_id_with_children(id) }
+    context '対象投稿が存在しない場合' do
+      let(:id) { NON_EXISTS_POST[:id] }
+      it 'nilが返ること' do
+        is_expected.to eq nil
+      end
+    end
+    context '対象投稿が論理削除されている場合' do
+      let(:id) { DELETED_POST[:id] }
+      it 'nilが返ること' do
+        is_expected.to eq nil
+      end
+    end
+    context '対象投稿の子投稿が論理削除されている場合' do
+      let(:id) { HIVING_DELETED_CHILD_POST[:id] }
+      it '親投稿のみが返ること' do
+        is_expected.to eq result_having_deleted_child_post
+      end
+    end
+    context '対象投稿が存在している場合' do
+      let(:id) { TEST_POST[:id] }
+      it '子投稿を持った親投稿が返ること' do
+        is_expected.to eq result_having_child_post
+      end
+    end
+  end
+
   describe '#find_by_uid' do
     subject { Post.find_by_uid(uid) }
     context '条件に一致するユーザーが存在しない場合' do
