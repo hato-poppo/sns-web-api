@@ -10,16 +10,18 @@ RSpec.describe Post, type: :model do
   DELETED_POST_CHILD = { id: 6, parent_id: 5, user_id: 1, title: 'テスト投稿（削除済み投稿の子）', text: 'これは削除されたテスト投稿の子投稿です。', is_deleted: false }
   HIVING_DELETED_CHILD_POST = { id: 7, parent_id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿を持つ投稿）', text: 'これは削除された子投稿を持つテスト投稿です。', is_deleted: false }
   DELETED_CHILD_POST = { id: 8, parent_id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿）', text: 'これは削除された子投稿です。', is_deleted: true }
-  REGEXP_POST = { id: 9, parent_id: 9, user_id: 1, title: 'テスト投稿（正規表現）%_', text: '%()\||/_', is_deleted: false }
-  let!(:posts) { Post.create([TEST_POST, CHILD_POST, CHILD_POST2, ALONE_POST, DELETED_POST, DELETED_POST_CHILD, HIVING_DELETED_CHILD_POST, DELETED_CHILD_POST, REGEXP_POST]) }
+  WILD_CARD_POST = { id: 9, parent_id: 9, user_id: 1, title: 'テスト投稿（ワイルドカード）%_', text: 'これはワイルドカードの%や_が含まれたテスト投稿です。', is_deleted: false }
+
+  let!(:posts) { Post.create([TEST_POST, CHILD_POST, CHILD_POST2, ALONE_POST, DELETED_POST, DELETED_POST_CHILD, HIVING_DELETED_CHILD_POST, DELETED_CHILD_POST, WILD_CARD_POST]) }
+  let(:children_posts) { [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])] }
   let(:result_having_child_post) { 
     parent = Post.find_by_id(TEST_POST[:id])
-    parent.update({ children: [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])] })
+    parent.update({ children: children_posts })
     parent
   }
   let(:result_alone_post) { Post.find_by_id(ALONE_POST[:id]) }
   let(:result_having_deleted_child_post) { Post.find_by_id(HIVING_DELETED_CHILD_POST[:id]) }
-  let(:result_regexp_post) { Post.find_by_id(REGEXP_POST[:id]) } # wild card
+  let(:result_wild_card_post) { Post.find_by_id(WILD_CARD_POST[:id]) } # wild card
 
   describe '#validate' do
     subject { Post.new(params) }
@@ -76,7 +78,7 @@ RSpec.describe Post, type: :model do
     end
     context 'データが存在する場合' do
       it '削除されていない投稿が全件取得できること' do
-        is_expected.to eq [result_having_child_post, result_alone_post, result_having_deleted_child_post, result_regexp_post]
+        is_expected.to eq [result_having_child_post, result_alone_post, result_having_deleted_child_post, result_wild_card_post]
       end
     end
   end
@@ -128,7 +130,7 @@ RSpec.describe Post, type: :model do
     context '条件に一致するデータが存在する場合' do
       let(:uid) { 'admin' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [Post.find_by_id(TEST_POST[:id]), Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id]), result_alone_post, result_having_deleted_child_post, result_regexp_post]
+        is_expected.to eq [Post.find_by_id(TEST_POST[:id]), Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id]), result_alone_post, result_having_deleted_child_post, result_wild_card_post]
       end
     end
   end
@@ -150,13 +152,13 @@ RSpec.describe Post, type: :model do
     context '_を条件にして一致するデータが存在する場合' do
       let(:text) { '_' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [result_regexp_post]
+        is_expected.to eq [result_wild_card_post]
       end
     end
     context '%を条件にして一致するデータが存在する場合' do
       let(:text) { '%' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [result_regexp_post]
+        is_expected.to eq [result_wild_card_post]
       end
     end
   end
@@ -172,19 +174,19 @@ RSpec.describe Post, type: :model do
     context '条件に一致するデータが存在する場合' do
       let(:title) { '（子）' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])]
+        is_expected.to eq children_posts
       end
     end
     context '_を条件にして一致するデータが存在する場合' do
       let(:title) { '_' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [Post.find_by_id(REGEXP_POST[:id])]
+        is_expected.to eq [result_wild_card_post]
       end
     end
     context '%を条件にして一致するデータが存在する場合' do
       let(:title) { '%' }
       it '該当データを全件取得できること' do
-        is_expected.to eq [Post.find_by_id(REGEXP_POST[:id])]
+        is_expected.to eq [result_wild_card_post]
       end
     end
   end
@@ -210,7 +212,7 @@ RSpec.describe Post, type: :model do
       end
       it '子投稿も同時に削除されていること' do
         subject
-        expect(Post.all_with_reply).to eq [result_alone_post, result_having_deleted_child_post, result_regexp_post]
+        expect(Post.all_with_reply).to eq [result_alone_post, result_having_deleted_child_post, result_wild_card_post]
       end
     end
   end
