@@ -35,7 +35,7 @@ class PostsController < ApplicationController
     end
 
     def secure
-      # User.to_secure
+      Post.to_secure
     end
 
 
