@@ -12,12 +12,7 @@ RSpec.describe "Posts", type: :request do
   WILD_CARD_POST = { id: 9, parent_id: 9, user_id: 1, title: 'テスト投稿（ワイルドカード）%_', text: 'これはワイルドカードの%や_が含まれたテスト投稿です。', is_deleted: false }
 
   let!(:posts) { Post.create([TEST_POST, CHILD_POST, CHILD_POST2, ALONE_POST, DELETED_POST, DELETED_POST_CHILD, HIVING_DELETED_CHILD_POST, DELETED_CHILD_POST, WILD_CARD_POST]) }
-  # let(:children_posts) { [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])] }
-  # let(:result_having_child_post) { 
-  #   parent = Post.find_by_id(TEST_POST[:id])
-  #   parent.update({ children: children_posts })
-  #   parent
-  # }
+  let(:result_having_child_post) { Post.find_by_id_with_children(TEST_POST[:id]).to_json(Post.to_secure) }
   # let(:result_alone_post) { Post.find_by_id(ALONE_POST[:id]) }
   # let(:result_having_deleted_child_post) { Post.find_by_id(HIVING_DELETED_CHILD_POST[:id]) }
   # let(:result_wild_card_post) { Post.find_by_id(WILD_CARD_POST[:id]) }
@@ -29,6 +24,29 @@ RSpec.describe "Posts", type: :request do
         subject
         json = JSON.parse(response.body)
         expect(json.length).to eq(4)
+      end
+      it 'ステータスコード200 が返ること' do
+        is_expected.to have_http_status(200)
+      end
+    end
+  end
+  describe "GET #show" do
+    subject { get "/posts/#{id}"; response }
+    context "対象データが存在しない場合" do
+      let(:id) { 99 }
+      it "エラーメッセージが返ること" do
+        subject
+        expect(response.body).to eq JSON.generate({ status: 404, message: '対象の投稿が存在していません。' })
+      end
+      it 'ステータスコード404 が返ること' do
+        is_expected.to have_http_status(404)
+      end
+    end
+    context "対象データが存在する場合" do
+      let(:id) { TEST_POST[:id] }
+      it "データが返ること" do
+        subject
+        expect(response.body).to eq(result_having_child_post)
       end
       it 'ステータスコード200 が返ること' do
         is_expected.to have_http_status(200)

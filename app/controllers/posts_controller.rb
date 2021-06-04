@@ -8,8 +8,8 @@ class PostsController < ApplicationController
   end
 
   def show
-    # user = User.find_by_id(record_id)&.to_json(secure)
-    # user ? response_success(user) : response_not_found(not_found_message)
+    post = Post.find_by_id_with_children(record_id)&.to_json(secure)
+    post ? response_success(post) : response_not_found(not_found_message)
   end
 
   def create
@@ -34,9 +34,16 @@ class PostsController < ApplicationController
       # params.require(:user).permit(:uid, :name, :email, :password, :role_id, :is_active)
     end
 
+    def record_id
+      params[:id]
+    end
+
     def secure
       Post.to_secure
     end
 
+    def not_found_message
+      '対象の投稿が存在していません。'
+    end
 
 end
