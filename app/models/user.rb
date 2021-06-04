@@ -18,6 +18,8 @@ class User < ApplicationRecord
 
   class << self
 
+    # TODO: 投稿ユーザーが削除されたら投稿自体も非表示に変更する必要あり
+
     def deactivate(uid)
       user = self.find_by_uid(uid)
       return nil if user.blank?

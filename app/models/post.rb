@@ -59,6 +59,10 @@ class Post < ApplicationRecord
       true
     end
 
+    def to_secure
+      { only: [:id, :parent_id, :user_id, :title, :text, :is_deleted, :created_at, :updated_at] }
+    end
+
     private
 
       def escape(str)
