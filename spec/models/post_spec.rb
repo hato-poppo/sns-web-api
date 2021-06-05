@@ -2,15 +2,15 @@ require 'rails_helper'
 
 RSpec.describe Post, type: :model do
   NON_EXISTS_POST = { id: 0 }
-  TEST_POST = { id: 1, parent_id: 1, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
+  TEST_POST = { id: 1, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
   CHILD_POST = { id: 2, parent_id: 1, user_id: 1, title: 'テスト投稿（子）', text: 'これはテスト投稿の子投稿です。', is_deleted: false }
   CHILD_POST2 = { id: 3, parent_id: 1, user_id: 1, title: 'テスト投稿（子）', text: 'これはテスト投稿の子投稿2です。', is_deleted: false }
-  ALONE_POST = { id: 4, parent_id: 4, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
-  DELETED_POST = { id: 5, parent_id: 5, user_id: 1, title: 'テスト投稿（削除済み）', text: 'これは削除されたテスト投稿です。', is_deleted: true }
+  ALONE_POST = { id: 4, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
+  DELETED_POST = { id: 5, user_id: 1, title: 'テスト投稿（削除済み）', text: 'これは削除されたテスト投稿です。', is_deleted: true }
   DELETED_POST_CHILD = { id: 6, parent_id: 5, user_id: 1, title: 'テスト投稿（削除済み投稿の子）', text: 'これは削除されたテスト投稿の子投稿です。', is_deleted: false }
-  HIVING_DELETED_CHILD_POST = { id: 7, parent_id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿を持つ投稿）', text: 'これは削除された子投稿を持つテスト投稿です。', is_deleted: false }
+  HIVING_DELETED_CHILD_POST = { id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿を持つ投稿）', text: 'これは削除された子投稿を持つテスト投稿です。', is_deleted: false }
   DELETED_CHILD_POST = { id: 8, parent_id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿）', text: 'これは削除された子投稿です。', is_deleted: true }
-  WILD_CARD_POST = { id: 9, parent_id: 9, user_id: 1, title: 'テスト投稿（ワイルドカード）%_', text: 'これはワイルドカードの%や_が含まれたテスト投稿です。', is_deleted: false }
+  WILD_CARD_POST = { id: 9, user_id: 1, title: 'テスト投稿（ワイルドカード）%_', text: 'これはワイルドカードの%や_が含まれたテスト投稿です。', is_deleted: false }
 
   let!(:posts) { Post.create([TEST_POST, CHILD_POST, CHILD_POST2, ALONE_POST, DELETED_POST, DELETED_POST_CHILD, HIVING_DELETED_CHILD_POST, DELETED_CHILD_POST, WILD_CARD_POST]) }
   let(:children_posts) { [Post.find_by_id(CHILD_POST[:id]), Post.find_by_id(CHILD_POST2[:id])] }
@@ -25,13 +25,6 @@ RSpec.describe Post, type: :model do
 
   describe '#validate' do
     subject { Post.new(params) }
-    context 'parent_idが空の場合' do
-      let(:params) { TEST_POST.merge({ parent_id: '' }) }
-      it 'バリデーションエラーが発生すること' do
-        is_expected.not_to be_valid
-        expect(subject.errors.full_messages).to eq ['親投稿IDを入力してください']
-      end
-    end
     context 'user_idが空の場合' do
       let(:params) { TEST_POST.merge({ user_id: '' }) }
       it 'バリデーションエラーが発生すること' do

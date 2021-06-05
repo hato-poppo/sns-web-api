@@ -8,6 +8,6 @@ class CreatePosts < ActiveRecord::Migration[6.1]
       t.datetime :created_at, default: -> { 'NOW()' }, comment: '登録日'
       t.datetime :updated_at, default: -> { 'NOW()' }, comment: '更新日'
     end
-    add_reference :posts, :parent, foreign_key: { to_table: :posts }, null: false, after: :id, comment: '親投稿ID'
+    add_reference :posts, :parent, foreign_key: { to_table: :posts }, after: :id, comment: '親投稿ID'
   end
 end

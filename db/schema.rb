@@ -13,7 +13,7 @@
 ActiveRecord::Schema.define(version: 2021_04_30_233635) do
 
   create_table "posts", charset: "utf8mb4", comment: "投稿テーブル", force: :cascade do |t|
-    t.bigint "parent_id", null: false, comment: "親投稿ID"
+    t.bigint "parent_id", comment: "親投稿ID"
     t.bigint "user_id", null: false, comment: "投稿者"
     t.string "title", null: false, comment: "投稿タイトル"
     t.string "text", null: false, comment: "投稿内容"
