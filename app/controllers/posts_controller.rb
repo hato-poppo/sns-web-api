@@ -13,8 +13,10 @@ class PostsController < ApplicationController
   end
 
   def create
-    # user = User.new(user_params)
-    # user.save ? response_success(user.to_json(secure)) : response_bad_request(user.errors.full_messages)
+    response_unprocessable_entity('投稿ユーザーが存在していません。') and return if post_user_not_exist?
+    response_unprocessable_entity('親投稿が存在していません。') and return if parent_post_not_exist?
+    post = Post.new(create_params)
+    post.save ? response_success(post.to_json(secure)) : response_unprocessable_entity(post.errors.full_messages)
   end
 
   def update
@@ -30,8 +32,8 @@ class PostsController < ApplicationController
 
   private
 
-    def post_params
-      # params.require(:user).permit(:uid, :name, :email, :password, :role_id, :is_active)
+    def create_params
+      params.require(:post).permit(:parent_id, :user_id, :title, :text)
     end
 
     def record_id
@@ -44,6 +46,16 @@ class PostsController < ApplicationController
 
     def not_found_message
       '対象の投稿が存在していません。'
+    end
+
+    def post_user_not_exist?
+      user_id = params[:post][:user_id] # ここの取り方をもっといい感じにしたい
+      User.find_by_id(user_id).nil?
+    end
+
+    def parent_post_not_exist?
+      parent_id = params[:post][:parent_id] # ここの取り方をもっといい感じにしたい
+      parent_id.nil?.! && Post.find_by_id(parent_id).nil?
     end
 
 end

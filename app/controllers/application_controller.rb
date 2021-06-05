@@ -20,6 +20,10 @@ class ApplicationController < ActionController::API
     render status: 409, json: { status: 409, message: message }
   end
 
+  def response_unprocessable_entity(message = 'Unprocessable Entity')
+    render status: 422, json: { status: 422, message: message }
+  end
+
   def response_internal_server_error(message = 'Internal Server Error')
     render status: 500, json: { status: 500, message: message }
   end

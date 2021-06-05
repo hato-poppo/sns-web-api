@@ -53,4 +53,83 @@ RSpec.describe "Posts", type: :request do
       end
     end
   end
+  describe "POST #create" do
+    subject { post '/posts', params: { post: params }; response }
+    context '投稿ユーザーが存在しない場合' do
+      let(:params) { { user_id: 99, title: 'テスト投稿', text: 'これはテスト投稿です。' } }
+      it 'エラーメッセージが返ること' do
+        subject
+        expect(response.body).to eq JSON.generate({ status: 422, message: '投稿ユーザーが存在していません。' })
+      end
+      it 'ステータスコード422 が返ること' do
+        is_expected.to have_http_status(422)
+      end
+    end
+    context '投稿ユーザーが存在する場合' do
+      let(:params) { { user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。' } }
+      it 'データの追加に成功すること' do
+        expect { subject }.to change(Post, :count).by(1)
+      end
+      it 'ステータスコード200 が返ること' do
+        is_expected.to have_http_status(200)
+      end
+    end
+    context '親投稿が存在しない場合' do
+      let(:params) { { parent_id: 99, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。' } }
+      it 'エラーメッセージが返ること' do
+        subject
+        expect(response.body).to eq JSON.generate({ status: 422, message: '親投稿が存在していません。' })
+      end
+      it 'ステータスコード422 が返ること' do
+        is_expected.to have_http_status(422)
+      end
+    end
+    context "親投稿が存在している場合" do
+      let(:params) { { parent_id: 1, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。' } }
+      it 'データの追加に成功すること' do
+        expect { subject }.to change(Post, :count).by(1)
+      end
+      it 'ステータスコード200 が返ること' do
+        is_expected.to have_http_status(200)
+      end
+    end
+  end
+  # describe "PUT #update" do
+  #   subject { put "/posts/#{id}", params: { user: params }; response }
+  #   context "対象データが存在しない場合" do
+  #     it "エラーメッセージが返ること" do
+  #       subject
+  #       expect(response.body).to eq JSON.generate({ status: 404, message: '対象の投稿が存在していません。' })
+  #     end
+  #     it 'ステータスコード404 が返ること' do
+  #       is_expected.to have_http_status(404)
+  #     end
+  #   end
+  #   context "対象データが存在する場合" do
+  #     it "" do
+  #     end
+  #     it 'ステータスコード200 が返ること' do
+  #       is_expected.to have_http_status(200)
+  #     end
+  #   end
+  # end
+  # describe "DELETE #destroy" do
+  #   subject { delete "/posts/#{id}"; response }
+  #   context "対象データが存在しない場合" do
+  #     it "エラーメッセージが返ること" do
+  #       subject
+  #       expect(response.body).to eq JSON.generate({ status: 404, message: '対象の投稿が存在していません。' })
+  #     end
+  #     it 'ステータスコード404 が返ること' do
+  #       is_expected.to have_http_status(404)
+  #     end
+  #   end
+  #   context "対象データが存在する場合" do
+  #     it "" do
+  #     end
+  #     it 'ステータスコード200 が返ること' do
+  #       is_expected.to have_http_status(200)
+  #     end
+  #   end
+  # end
 end
