@@ -26,8 +26,8 @@ class PostsController < ApplicationController
   end
 
   def destroy
-    # response_not_found(not_found_message) and return if User.find_by_id(record_id).blank?
-    # response_success(User.deactivate(record_id)&.to_json(secure))
+    response_not_found(not_found_message) and return if Post.find_by_id(record_id).nil?
+    response_success(Post.logical_delete_with_children(record_id))
   end
 
   private

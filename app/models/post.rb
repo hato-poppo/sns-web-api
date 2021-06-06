@@ -51,6 +51,7 @@ class Post < ApplicationRecord
     end
 
     def logical_delete_with_children(id)
+      # find_by_id_with_children で検索すると削除済みの要素が検索出来ない為、敢えて親と子を別々に検索している
       post = self.find_by(id: id, is_deleted: false)
       return false if post.blank?
 

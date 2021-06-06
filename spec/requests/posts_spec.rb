@@ -13,9 +13,6 @@ RSpec.describe "Posts", type: :request do
 
   let!(:posts) { Post.create([TEST_POST, CHILD_POST, CHILD_POST2, ALONE_POST, DELETED_POST, DELETED_POST_CHILD, HIVING_DELETED_CHILD_POST, DELETED_CHILD_POST, WILD_CARD_POST]) }
   let(:result_having_child_post) { Post.find_by_id_with_children(TEST_POST[:id]).to_json(Post.to_secure) }
-  # let(:result_alone_post) { Post.find_by_id(ALONE_POST[:id]) }
-  # let(:result_having_deleted_child_post) { Post.find_by_id(HIVING_DELETED_CHILD_POST[:id]) }
-  # let(:result_wild_card_post) { Post.find_by_id(WILD_CARD_POST[:id]) }
 
   describe "GET #index" do
     subject { get '/posts'; response }
@@ -119,23 +116,27 @@ RSpec.describe "Posts", type: :request do
       end
     end
   end
-  # describe "DELETE #destroy" do
-  #   subject { delete "/posts/#{id}"; response }
-  #   context "対象データが存在しない場合" do
-  #     it "エラーメッセージが返ること" do
-  #       subject
-  #       expect(response.body).to eq JSON.generate({ status: 404, message: '対象の投稿が存在していません。' })
-  #     end
-  #     it 'ステータスコード404 が返ること' do
-  #       is_expected.to have_http_status(404)
-  #     end
-  #   end
-  #   context "対象データが存在する場合" do
-  #     it "" do
-  #     end
-  #     it 'ステータスコード200 が返ること' do
-  #       is_expected.to have_http_status(200)
-  #     end
-  #   end
-  # end
+  describe "DELETE #destroy" do
+    subject { delete "/posts/#{id}"; response }
+    context "対象データが存在しない場合" do
+      let(:id) { 99 }
+      it "エラーメッセージが返ること" do
+        subject
+        expect(response.body).to eq JSON.generate({ status: 404, message: '対象の投稿が存在していません。' })
+      end
+      it 'ステータスコード404 が返ること' do
+        is_expected.to have_http_status(404)
+      end
+    end
+    context "対象データが存在する場合" do
+      let(:id) { TEST_POST[:id] }
+      it "実行結果（true）が返ること" do
+        subject
+        expect(response.body).to eq 'true'
+      end
+      it 'ステータスコード200 が返ること' do
+        is_expected.to have_http_status(200)
+      end
+    end
+  end
 end
