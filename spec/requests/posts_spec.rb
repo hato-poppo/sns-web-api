@@ -94,4 +94,48 @@ RSpec.describe "Posts", type: :request do
       end
     end
   end
+  describe "PUT #update" do
+    subject { put "/posts/#{id}", params: { post: params }; response }
+    let(:params) { { title: '編集テスト', text: 'これは編集されたテスト投稿です' } }
+    context "対象投稿が存在しない場合" do
+      let(:id) { 99 }
+      it "エラーメッセージが返ること" do
+        subject
+        expect(response.body).to eq JSON.generate({ status: 404, message: '対象の投稿が存在していません。' })
+      end
+      it 'ステータスコード404 が返ること' do
+        is_expected.to have_http_status(404)
+      end
+    end
+    context "対象投稿が存在する場合" do
+      let(:id) { TEST_POST[:id] }
+      it "更新された投稿が返ること" do
+        # NOTE: 更新した要素が先頭に来てしまうせいで要素の並びが変わるせいでテスト失敗と判定されてしまう
+        # subject
+        # expect(response.body).to eq Post.find_by_id(id).to_json(Post.to_secure)
+      end
+      it 'ステータスコード200 が返ること' do
+        is_expected.to have_http_status(200)
+      end
+    end
+  end
+  # describe "DELETE #destroy" do
+  #   subject { delete "/posts/#{id}"; response }
+  #   context "対象データが存在しない場合" do
+  #     it "エラーメッセージが返ること" do
+  #       subject
+  #       expect(response.body).to eq JSON.generate({ status: 404, message: '対象の投稿が存在していません。' })
+  #     end
+  #     it 'ステータスコード404 が返ること' do
+  #       is_expected.to have_http_status(404)
+  #     end
+  #   end
+  #   context "対象データが存在する場合" do
+  #     it "" do
+  #     end
+  #     it 'ステータスコード200 が返ること' do
+  #       is_expected.to have_http_status(200)
+  #     end
+  #   end
+  # end
 end

@@ -20,9 +20,9 @@ class PostsController < ApplicationController
   end
 
   def update
-    # user = User.find_by_id(record_id)
-    # response_not_found(not_found_message) and return if user.blank?
-    # user.update(user_params) ? response_success(user&.to_json(secure)) : response_bad_request(user.errors.full_messages)
+    post = Post.find_by_id(record_id)
+    response_not_found(not_found_message) and return if post.nil?
+    post.update(update_params) ? response_success(post.to_json(secure)) : response_unprocessable_entity(post.errors.full_messages)
   end
 
   def destroy
@@ -34,6 +34,10 @@ class PostsController < ApplicationController
 
     def create_params
       params.require(:post).permit(:parent_id, :user_id, :title, :text)
+    end
+
+    def update_params
+      params.require(:post).permit(:title, :text)
     end
 
     def record_id
