@@ -7,7 +7,7 @@ RSpec.describe Post, type: :model do
   CHILD_POST2 = { id: 3, parent_id: 1, user_id: 1, title: 'テスト投稿（子）', text: 'これはテスト投稿の子投稿2です。', is_deleted: false }
   ALONE_POST = { id: 4, user_id: 1, title: 'テスト投稿', text: 'これはテスト投稿です。', is_deleted: false }
   DELETED_POST = { id: 5, user_id: 1, title: 'テスト投稿（削除済み）', text: 'これは削除されたテスト投稿です。', is_deleted: true }
-  DELETED_POST_CHILD = { id: 6, parent_id: 5, user_id: 1, title: 'テスト投稿（削除済み投稿の子）', text: 'これは削除されたテスト投稿の子投稿です。', is_deleted: false }
+  DELETED_POST_CHILD = { id: 6, parent_id: 5, user_id: 1, title: 'テスト投稿（削除済み投稿の子）', text: 'これは削除されたテスト投稿の子投稿です。', is_deleted: true }
   HIVING_DELETED_CHILD_POST = { id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿を持つ投稿）', text: 'これは削除された子投稿を持つテスト投稿です。', is_deleted: false }
   DELETED_CHILD_POST = { id: 8, parent_id: 7, user_id: 1, title: 'テスト投稿（削除済みの子投稿）', text: 'これは削除された子投稿です。', is_deleted: true }
   WILD_CARD_POST = { id: 9, user_id: 1, title: 'テスト投稿（ワイルドカード）%_', text: 'これはワイルドカードの%や_が含まれたテスト投稿です。', is_deleted: false }
