@@ -17,9 +17,9 @@ class Post < ApplicationRecord
   scope :by_id, -> (id) { where(id: id) }
   scope :by_user_id, -> (user_id) { where(user_id: user_id) }
   scope :by_parent_id, -> (parent_id) { where(parent_id: parent_id) }
-  scope :with_visible, -> { where(is_deleted: false).joins('INNER JOIN (SELECT id AS exists_id FROM `posts` WHERE is_deleted = false) parent ON exists_id = `posts`.`parent_id`') }
-  scope :only_parents, -> { where('parent_id = posts.id') }
-  scope :only_children, -> { where('parent_id != posts.id') }
+  scope :with_visible, -> { where(is_deleted: false) }
+  scope :only_parents, -> { where(parent_id: nil) }
+  scope :only_children, -> { where('parent_id IS NOT NULL') }
 
   class << self
 
@@ -51,10 +51,12 @@ class Post < ApplicationRecord
     end
 
     def logical_delete_with_children(id)
-      parent_id = self.find_by(id: id, is_deleted: false)&.parent_id
-      return false if parent_id.blank?
+      # find_by_id_with_children で検索すると削除済みの要素が検索出来ない為、敢えて親と子を別々に検索している
+      post = self.find_by(id: id, is_deleted: false)
+      return false if post.blank?
 
-      self.by_parent_id(parent_id).each { |post| post.update(is_deleted: true) }
+      post.update(is_deleted: true)
+      self.by_parent_id(post.id).each { |child| child.update(is_deleted: true) }
       true
     end
 
