@@ -28,6 +28,10 @@ class Post < ApplicationRecord
       select_all_visible_parents&.each { |x| x.children = children[x.id] || [] } || []
     end
 
+    def find_by_id(id)
+      self.by_id(id).with_visible.with_users.select_posts.first
+    end
+
     def find_by_id_with_children(id)
       parent = self.by_id(id).with_visible.with_users.select_posts
       return nil if parent.empty?

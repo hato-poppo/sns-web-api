@@ -16,7 +16,7 @@ class PostsController < ApplicationController
     response_unprocessable_entity('投稿ユーザーが存在していません。') and return if post_user_not_exist?
     response_unprocessable_entity('親投稿が存在していません。') and return if parent_post_not_exist?
     post = Post.new(create_params)
-    post.save ? response_success(post.to_json(secure)) : response_unprocessable_entity(post.errors.full_messages)
+    post.save ? response_success(Post.find_by_id(post.id).to_json(secure)) : response_unprocessable_entity(post.errors.full_messages)
   end
 
   def update
