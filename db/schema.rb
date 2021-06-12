@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_30_233635) do
+ActiveRecord::Schema.define(version: 2021_06_11_232931) do
 
   create_table "posts", charset: "utf8mb4", comment: "投稿テーブル", force: :cascade do |t|
     t.bigint "parent_id", comment: "親投稿ID"
@@ -29,6 +29,13 @@ ActiveRecord::Schema.define(version: 2021_04_30_233635) do
     t.index ["name"], name: "index_roles_on_name", unique: true
   end
 
+  create_table "tokens", id: false, charset: "utf8mb4", comment: "認証情報テーブル", force: :cascade do |t|
+    t.bigint "user_id", null: false, comment: "投稿者"
+    t.string "hash", null: false, comment: "認証トークン"
+    t.datetime "limit", null: false, comment: "期限"
+    t.index ["user_id"], name: "index_tokens_on_user_id", unique: true
+  end
+
   create_table "users", charset: "utf8mb4", comment: "ユーザー管理テーブル", force: :cascade do |t|
     t.string "uid", null: false, comment: "ユーザーID"
     t.string "name", null: false, comment: "ユーザー名"
@@ -45,5 +52,6 @@ ActiveRecord::Schema.define(version: 2021_04_30_233635) do
 
   add_foreign_key "posts", "posts", column: "parent_id"
   add_foreign_key "posts", "users"
+  add_foreign_key "tokens", "users"
   add_foreign_key "users", "roles"
 end
