@@ -30,3 +30,6 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # Compile to Japanese
 gem 'rails-i18n'
+
+# Use JSON Web Token
+gem 'jwt'
