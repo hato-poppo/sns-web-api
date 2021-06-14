@@ -7,22 +7,16 @@ class Token < ApplicationRecord
       user_id = User.find_by_uid(uid)&.id
       raise '指定のユーザーが見つかりません。' if user_id.nil?
 
-      # まずは期限切れトークンがないかを確認し、あるなら削除しておく
       delete_dead_token(user_id)
 
       payload = { uid: uid, date: Time.zone.now, num: rand(0..9999) }
       hash = jwt_encode(payload)
 
-      self.create({ user_id: user_id, hash: hash, limit: Time.zone.now + 14.days })
-      true
-    rescue => e
-      #　なぜかこのモデルだけレコード登録時に必ずエラーが返る為、原因調査
-      p e
-      false
+      self.create({ user_id: user_id, digest_hash: hash, limit: token_limit })
     end
 
     def authenticate?(hash)
-      self.find_by_hash(hash).present?
+      self.find_by(digest_hash: hash).present?
     end
 
     private
@@ -44,6 +38,10 @@ class Token < ApplicationRecord
         dead_token = self.find_by_user_id(user_id)
         p dead_token
         dead_token.destroy if dead_token.present?
+      end
+
+      def token_limit
+        Time.zone.now + 14.days
       end
 
   end
