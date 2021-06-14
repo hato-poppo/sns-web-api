@@ -1,8 +1,15 @@
 class Token < ApplicationRecord
+  belongs_to :user
+
+  scope :by_user_id, -> (user_id) { where(user_id: user_id) }
+  scope :by_digest_hash, -> (hash) { where(digest_hash: hash) }
+  scope :with_dead, -> { where("limit < #{Time.zone.now}") }
+  scope :with_alive, -> { where("limit >= #{Time.zone.now}") }
+  scope :with_user, -> { joins(:user).select('users.uid, users.name') }
 
   class << self
 
-    def insert_hash(uid, payload)
+    def insert_hash(uid)
       user_id = User.find_by_uid(uid)&.id
       raise '指定のユーザーが見つかりません。' if user_id.nil?
 
@@ -15,7 +22,11 @@ class Token < ApplicationRecord
     end
 
     def authenticate?(hash)
-      self.find_by(digest_hash: hash).where("limit <= #{Time.zone.now}").present?
+      self.by_digest_hash(hash).with_alive.first.present?
+    end
+
+    def loggedin_user(hash)
+      self.by_digest_hash(hash).with_alive.first
     end
 
     private
@@ -33,9 +44,7 @@ class Token < ApplicationRecord
       end
 
       def delete_dead_token(user_id)
-        # self.find_by_user_id(user_id)&.destroy で良いと思う
-        dead_token = self.find_by_user_id(user_id)
-        dead_token.destroy if dead_token.present?
+        self.by_user_id(user_id).with_dead.first&.destroy
       end
 
       def token_limit
