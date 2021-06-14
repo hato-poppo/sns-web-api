@@ -16,7 +16,7 @@ class Token < ApplicationRecord
     end
 
     def authenticate?(hash)
-      self.find_by(digest_hash: hash).present?
+      self.find_by(digest_hash: hash).where("limit <= #{Time.zone.now}").present?
     end
 
     private
