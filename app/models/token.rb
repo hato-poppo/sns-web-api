@@ -2,8 +2,7 @@ class Token < ApplicationRecord
 
   class << self
 
-    def insert_hash(uid, payload)      
-      # payload = { data: 'test' }
+    def insert_hash(uid, payload)
       user_id = User.find_by_uid(uid)&.id
       raise '指定のユーザーが見つかりません。' if user_id.nil?
 
@@ -36,7 +35,6 @@ class Token < ApplicationRecord
       def delete_dead_token(user_id)
         # self.find_by_user_id(user_id)&.destroy で良いと思う
         dead_token = self.find_by_user_id(user_id)
-        p dead_token
         dead_token.destroy if dead_token.present?
       end
 
