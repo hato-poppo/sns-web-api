@@ -1,28 +1,32 @@
 class Token < ApplicationRecord
+  belongs_to :user
+
+  scope :by_user_id, -> (user_id) { where(user_id: user_id) }
+  scope :by_digest_hash, -> (hash) { where(digest_hash: hash) }
+  scope :with_dead, -> { where("limit < #{Time.zone.now}") }
+  scope :with_alive, -> { where("limit >= #{Time.zone.now}") }
+  scope :with_user, -> { joins(:user).select('users.uid, users.name') }
 
   class << self
 
-    def insert_hash(uid, payload)      
-      # payload = { data: 'test' }
+    def insert_hash(uid)
       user_id = User.find_by_uid(uid)&.id
       raise '指定のユーザーが見つかりません。' if user_id.nil?
 
-      # まずは期限切れトークンがないかを確認し、あるなら削除しておく
       delete_dead_token(user_id)
 
       payload = { uid: uid, date: Time.zone.now, num: rand(0..9999) }
       hash = jwt_encode(payload)
 
-      self.create({ user_id: user_id, hash: hash, limit: Time.zone.now + 14.days })
-      true
-    rescue => e
-      #　なぜかこのモデルだけレコード登録時に必ずエラーが返る為、原因調査
-      p e
-      false
+      self.create({ user_id: user_id, digest_hash: hash, limit: token_limit })
     end
 
     def authenticate?(hash)
-      self.find_by_hash(hash).present?
+      self.by_digest_hash(hash).with_alive.first.present?
+    end
+
+    def loggedin_user(hash)
+      self.by_digest_hash(hash).with_alive.first
     end
 
     private
@@ -40,10 +44,11 @@ class Token < ApplicationRecord
       end
 
       def delete_dead_token(user_id)
-        # self.find_by_user_id(user_id)&.destroy で良いと思う
-        dead_token = self.find_by_user_id(user_id)
-        p dead_token
-        dead_token.destroy if dead_token.present?
+        self.by_user_id(user_id).with_dead.first&.destroy
+      end
+
+      def token_limit
+        Time.zone.now + 14.days
       end
 
   end

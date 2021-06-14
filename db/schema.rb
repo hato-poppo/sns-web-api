@@ -31,7 +31,7 @@ ActiveRecord::Schema.define(version: 2021_06_11_232931) do
 
   create_table "tokens", id: false, charset: "utf8mb4", comment: "認証情報テーブル", force: :cascade do |t|
     t.bigint "user_id", null: false, comment: "投稿者"
-    t.string "hash", null: false, comment: "認証トークン"
+    t.string "digest_hash", null: false, comment: "認証トークン"
     t.datetime "limit", null: false, comment: "期限"
     t.index ["user_id"], name: "index_tokens_on_user_id", unique: true
   end
