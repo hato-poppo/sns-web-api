@@ -35,4 +35,21 @@ RSpec.describe Token, type: :model do
     end
   end
 
+  describe '#loggedin_user' do
+    let(:token) { Token.insert_hash('admin') }
+    subject { Token.loggedin_user(hash) }
+    context '同一トークンが存在しない場合' do
+      let(:hash) { 'test' }
+      it 'nil が返ること' do
+        is_expected.to eq nil
+      end
+    end
+    context '同一トークンが存在する場合' do
+      let(:hash) { token }
+      it 'ユーザーIDが返ること' do
+        is_expected.to eq User.find_by_id(1)
+      end
+    end
+  end
+
 end
