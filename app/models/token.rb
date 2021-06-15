@@ -3,22 +3,23 @@ class Token < ApplicationRecord
 
   scope :by_user_id, -> (user_id) { where(user_id: user_id) }
   scope :by_digest_hash, -> (hash) { where(digest_hash: hash) }
-  scope :with_dead, -> { where("limit < #{Time.zone.now}") }
-  scope :with_alive, -> { where("limit >= #{Time.zone.now}") }
+  scope :with_dead, -> { where("tokens.limit < '#{Time.zone.now}'") }
+  scope :with_alive, -> { where("tokens.limit >= '#{Time.zone.now}'") }
   scope :with_user, -> { joins(:user).select('users.uid, users.name') }
 
   class << self
 
     def insert_hash(uid)
       user_id = User.find_by_uid(uid)&.id
-      raise '指定のユーザーが見つかりません。' if user_id.nil?
+      return nil if user_id.nil?
 
       delete_dead_token(user_id)
 
       payload = { uid: uid, date: Time.zone.now, num: rand(0..9999) }
       hash = jwt_encode(payload)
 
-      self.create({ user_id: user_id, digest_hash: hash, limit: token_limit })
+      token = self.create({ user_id: user_id, digest_hash: hash, limit: token_limit })
+      token.digest_hash
     end
 
     def authenticate?(hash)
@@ -26,7 +27,10 @@ class Token < ApplicationRecord
     end
 
     def loggedin_user(hash)
-      self.by_digest_hash(hash).with_alive.first
+      user_id = self.by_digest_hash(hash).with_alive.first&.user_id
+      return nil if user_id.nil?
+
+      User.find_by_id(user_id)
     end
 
     private
