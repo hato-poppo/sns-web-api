@@ -3,8 +3,8 @@ class Token < ApplicationRecord
 
   scope :by_user_id, -> (user_id) { where(user_id: user_id) }
   scope :by_digest_hash, -> (hash) { where(digest_hash: hash) }
-  scope :with_dead, -> { where("limit < #{Time.zone.now}") }
-  scope :with_alive, -> { where("limit >= #{Time.zone.now}") }
+  scope :with_dead, -> { where("tokens.limit < '#{Time.zone.now}'") }
+  scope :with_alive, -> { where("tokens.limit >= '#{Time.zone.now}'") }
   scope :with_user, -> { joins(:user).select('users.uid, users.name') }
 
   class << self
