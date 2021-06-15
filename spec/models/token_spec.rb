@@ -18,4 +18,21 @@ RSpec.describe Token, type: :model do
     end
   end
 
+  describe '#authenticate?' do
+    let(:token) { Token.insert_hash('admin') }
+    subject { Token.authenticate?(hash) }
+    context '同一トークンが存在しない場合' do
+      let(:hash) { 'test' }
+      it 'false が返ること' do
+        is_expected.to eq false
+      end
+    end
+    context '同一トークンが存在する場合' do
+      let(:hash) { token }
+      it 'true が返ること' do
+        is_expected.to eq true
+      end
+    end
+  end
+
 end
